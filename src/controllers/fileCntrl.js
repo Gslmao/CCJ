@@ -3,7 +3,8 @@ import { uploadFile, createCase, getAllCases, deleteCase, getCaseDetails } from 
 export async function SubmitCase(req, res) {
     try {
         const file = req.file;
-        const result = await uploadFile(file, req.role);
+        const userId = req.userID;
+        const result = await uploadFile(userId, file, req.role);
         res.status(200).json({ message: 'File uploaded successfully', result });
     } catch (error) {
         res.status(500).json({ error1: error.message, msg: "fileCntrl" });

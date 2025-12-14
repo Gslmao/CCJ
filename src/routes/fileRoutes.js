@@ -10,7 +10,7 @@ caseRouter.post("/submit", authVerify, upload.single('file'), SubmitCase);
 caseRouter.post("/new", authVerify, upload.none(), NewCase);
 caseRouter.get("/getcase/:id", authVerify, FetchCase);
 caseRouter.get("/all", FetchAllCases);
-
+caseRouter.get("/judge", authVerify, FetchAllCases);
 caseRouter.patch("/delete/:id", authVerify, RemoveCase);
 // caseRouter.patch("/edit/:id", );
 

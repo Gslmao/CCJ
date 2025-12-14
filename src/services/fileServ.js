@@ -1,7 +1,7 @@
 import supabase from "./dbClient.js";
 import fs from "fs";
 
-export async function uploadFile(file, role){
+export async function uploadFile(caseId, file, role){
     try {
         if (!file) { 
             return {error: 'No file uploaded'}
@@ -12,7 +12,7 @@ export async function uploadFile(file, role){
         
         const { data, error } = await supabase.storage
             .from(`${role} Files`)
-            .upload(fileName, fileData, {
+            .upload(`${caseId}/${fileName}`, fileData, {
                 cacheControl: '3600',
                 upsert: false,
                 contentType: file.mimetype
@@ -79,7 +79,8 @@ export async function getAllCases(){
     try{
         const { data, error } = await supabase
             .from('cases')
-            .select('*');
+            .select('*')
+            .eq('approval', 'TRUE');
         if (error) return { error: error.message, msg: "Get all cases failed" };
         return { success: true, cases: data };
     } catch (error) {
@@ -158,6 +159,7 @@ export async function getCaseDetails(caseId, userId){
             created_by,
             judge_id,
             created_at,
+            approval,
 
             case_vote_summary (
             guilty_count,
