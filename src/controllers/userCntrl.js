@@ -5,8 +5,7 @@ export async function Login(req, res) {
     const { email, password } = req.body;
     try {
         const data = await signIn(email, password);
-        console.log(data);
-        const response = { token: data?.session?.access_token, user:data?.user.id, role: data?.user.user_metadata.role };
+        const response = { token: data?.session?.access_token, user_id:data?.user.id, role: data?.user.user_metadata.role, user: data?.user.user_metadata.username };
         res.status(200).json(response);
     } catch (error) {
         res.status(401).json({ error: error.message });

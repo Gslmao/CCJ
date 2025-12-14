@@ -38,6 +38,8 @@ const Login = () => {
     console.log(data);
     localStorage.setItem('token', data.token);
     localStorage.setItem('userole', data.role);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    localStorage.setItem('userID', data.user_id);
     setIsSubmitting(false);
     navigate("/dashboard");
   };

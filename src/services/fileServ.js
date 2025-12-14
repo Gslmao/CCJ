@@ -49,7 +49,7 @@ export async function createCase(details){
     try{
         const { data, error } = await supabase
             .from('cases')
-            .insert({title: details.title, description: details.desc, created_by: details.created_by, judge_id:details.judge, status: 'OPEN' })
+            .insert({title: details.title, description: details.description, created_by: details.created_by, judge_id:details.judge_id, status: 'OPEN' })
             .select();
 
         if (error) {
@@ -67,7 +67,6 @@ export async function createCase(details){
             .from('participants')
             .insert([{case_id: data[0].id, user_id: details.judge_id, role:'Judge'},
                      {case_id: data[0].id, user_id: details.created_by, role:'Plaintiff'}])
-        console.log('judge added')
         
         return { success: true, caseId: data[0].id };
     } catch (error) {
@@ -75,15 +74,25 @@ export async function createCase(details){
     }
 }
 
-export async function getAllCases(){
+export async function getAllCases(role){
     try{
-        const { data, error } = await supabase
-            .from('cases')
-            .select('*')
-            .eq('approval', 'TRUE');
-        if (error) return { error: error.message, msg: "Get all cases failed" };
-        return { success: true, cases: data };
+        if (role === 'judge'){
+            const { data, error } = await supabase
+                .from('cases')
+                .select('*');
+            if (error) return { error: error.message, msg: "Get all cases failed" };
+            return { success: true, cases: data };
+        } else {
+            const { data, error } = await supabase
+                .from('cases')
+                .select('*')
+                .eq('approval', 'TRUE');
+            if (error) return { error: error.message, msg: "Get all cases failed" };
+            return { success: true, cases: data };
+        }
+
     } catch (error) {
+        console.log(error);
         return { error: error.message, msg: "fileServ getAllCases" };
     }
 }
@@ -92,8 +101,9 @@ export async function deleteCase(caseId){
     try{
         const { data, error } = await supabase
             .from('cases')
-            .update({ status: 'deleted' })
-            .eq('id', caseId);
+            .eq('id', caseId)
+            .delete();
+
         if (error) return { error: error.message, msg: "Delete case failed" };
         return { success: true };
     } catch (error) {
@@ -113,31 +123,6 @@ export async function editCase(caseId, updates){
 
     } catch (error) {
         return { error: error.message, msg: "fileServ editCase" };
-    }
-}
-
-export async function castVote(party, caseId){
-    try{
-        if (party === 'guilty') {
-            const { data, error } = await supabase
-            .from('case_vote_summary')
-            .update({ guilty_count: supabase.raw('guilty_count + 1')})
-            .eq({case_id: caseId});
-            if (error) return { error: error.message, msg: "Cast vote failed" };
-            return { success: true };
-
-        } else if (party === 'not_guilty') {
-            const { data, error } = await supabase
-            .from('case_vote_summary')
-            .update({ not_guilty_count: supabase.raw('not_guilty_count + 1')})
-            .eq({case_id: caseId});
-            if (error) return { error: error.message, msg: "Cast vote failed" };
-            return { success: true };
-        } else {
-            return { error: "Invalid party", msg: "Cast vote failed" };
-        }
-    } catch (error) {
-        return { error: error.message, msg: "fileServ castVote" };
     }
 }
 
@@ -183,12 +168,26 @@ export async function getCaseDetails(caseId, userId){
             created_at: data.created_at,
             files: [],
             votes: data.case_vote_summary,
-            userVote: data.participants[0].has_voted
+            // userVote: data.participants[0].has_voted
             };
-        console.log('response:', response);
+        
         if (error) return { error: error.message, msg: "Get case details failed" };
         return response;
     } catch (error) {
         return { error: error.message, msg: "fileServ getCaseDetails" };
     }
 }
+
+export async function getCaseFiles(caseId, role){
+    try{
+        const { data, error } = await supabase.storage
+            .from(`${role} Files`)
+            .list(`${caseId}/`);
+            
+        if (error) return { error: error.message, msg: "Get case files failed" };
+        return { success: true, files: data };
+    } catch (error) {
+        return { error: error.message, msg: "fileServ getCaseFiles" };
+    }
+}
+

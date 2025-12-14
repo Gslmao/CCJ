@@ -14,7 +14,7 @@ export default function detExtCase(req, res, next) {
     req.detailsC = {
         title: body.caseTitle, 
         description: body.caseDescription, 
-        judge_id: body.judgeId
+        judge_id: body.judgweId
     };
     next();
 }
